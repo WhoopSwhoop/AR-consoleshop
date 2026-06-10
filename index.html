@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Uc<span>AR</span>s — Used Console AR Shop</title>
+<script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.3.0/model-viewer.min.js"></script>
+<style>
+  :root {
+    --bg: #131313;
+    --bg2: #1C1B1B;
+    --bg3: #18181B;
+    --card: #18181B;
+    --border: rgba(255,255,255,0.08);
+    --border2: rgba(255,255,255,0.14);
+    --teal: #94D3C1;
+    --teal-dim: #86C5B3;
+    --teal-deep: #004D40;
+    --blue: #A5C8FF;
+    --purple: #7F52FF;
+    --purple-dim: #CDBDFF;
+    --text: #E5E2E1;
+    --text-muted: #C1C6D4;
+    --text-dim: #71717A;
+    --danger: #ff6b6b;
+    --success: #94D3C1;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Inter', system-ui, sans-serif; min-height: 100vh; }
+
+  /* NAV */
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(19,19,19,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+    height: 60px; display: flex; align-items: center; justify-content: space-between;
+  }
+  .nav-logo { font-size: 22px; font-weight: 700; letter-spacing: -0.5px; cursor: pointer; }
+  .nav-logo span { color: var(--teal); }
+  .nav-links { display: flex; gap: 8px; }
+  .nav-link {
+    padding: 6px 14px; border-radius: 6px; cursor: pointer;
+    font-size: 14px; color: var(--text-muted);
+    transition: all 0.15s;
+  }
+  .nav-link:hover { background: rgba(255,255,255,0.06); color: var(--text); }
+  .nav-link.active { color: var(--text); background: rgba(255,255,255,0.06); }
+  .nav-right { display: flex; align-items: center; gap: 12px; }
+  .cart-btn {
+    display: flex; align-items: center; gap: 6px;
+    padding: 7px 16px; border-radius: 6px;
+    background: var(--teal-deep); border: 1px solid rgba(148,211,193,0.25);
+    color: var(--teal); font-size: 14px; font-weight: 500; cursor: pointer;
+    transition: all 0.15s;
+  }
+  .cart-btn:hover { background: rgba(0,77,64,0.8); }
+  .cart-count {
+    background: var(--teal); color: #00201A;
+    width: 18px; height: 18px; border-radius: 50%;
+    font-size: 11px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  /* PAGES */
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* ─── INDEX ─── */
+  .hero {
+    position: relative; overflow: hidden;
+    min-height: 520px;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    text-align: center; padding: 80px 24px 60px;
+  }
+  .hero-bg {
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(0,77,64,0.5) 0%, transparent 70%),
+                radial-gradient(ellipse 40% 40% at 80% 80%, rgba(127,82,255,0.15) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 5px 12px; border-radius: 20px;
+    background: rgba(148,211,193,0.1); border: 1px solid rgba(148,211,193,0.2);
+    color: var(--teal); font-size: 12px; font-weight: 500; letter-spacing: 0.5px;
+    margin-bottom: 24px; text-transform: uppercase;
+  }
+  .hero-badge::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--teal); animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+  .hero h1 { font-size: clamp(40px, 6vw, 72px); font-weight: 800; letter-spacing: -2px; line-height: 1.05; margin-bottom: 20px; }
+  .hero h1 .ar { color: var(--teal); }
+  .hero-sub { font-size: 18px; color: var(--text-muted); max-width: 520px; line-height: 1.6; margin-bottom: 36px; }
+  .hero-actions { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+  .btn-primary {
+    padding: 13px 28px; border-radius: 8px;
+    background: var(--teal); color: #00201A;
+    font-size: 15px; font-weight: 700; cursor: pointer; border: none;
+    transition: all 0.15s; letter-spacing: 0.2px;
+  }
+  .btn-primary:hover { background: #a8ddd0; transform: translateY(-1px); }
+  .btn-outline {
+    padding: 13px 28px; border-radius: 8px;
+    background: transparent; color: var(--text);
+    font-size: 15px; font-weight: 600; cursor: pointer;
+    border: 1px solid var(--border2);
+    transition: all 0.15s;
+  }
+  .btn-outline:hover { background: rgba(255,255,255,0.05); }
+
+  .stats-bar {
+    display: flex; justify-content: center; gap: 48px;
+    padding: 32px 24px; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+    background: rgba(255,255,255,0.015);
+  }
+  .stat { text-align: center; }
+  .stat-num { font-size: 28px; font-weight: 800; color: var(--teal); letter-spacing: -1px; }
+  .stat-label { font-size: 12px; color: var(--text-dim); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+  .section { padding: 56px 24px; max-width: 1200px; margin: 0 auto; }
+  .section-header { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 28px; }
+  .section-title { font-size: 22px; font-weight: 700; letter-spacing: -0.5px; }
+  .section-link { font-size: 14px; color: var(--teal); cursor: pointer; }
+  .section-link:hover { text-decoration: underline; }
+
+  .consoles-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
+
+  .console-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 12px; overflow: hidden; cursor: pointer;
+    transition: all 0.2s;
+  }
+  .console-card:hover { border-color: rgba(148,211,193,0.3); transform: translateY(-2px); box-shadow: 0 8px 32px rgba(0,0,0,0.4); }
+  .card-img {
+    background: linear-gradient(135deg, #1C1B1B 0%, #09090B 100%);
+    height: 180px; display: flex; align-items: center; justify-content: center;
+    position: relative; overflow: hidden;
+  }
+  .card-img-emoji { font-size: 72px; filter: drop-shadow(0 4px 16px rgba(0,0,0,0.5)); }
+  .card-condition {
+    position: absolute; top: 10px; right: 10px;
+    padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 600;
+  }
+  .cond-a { background: rgba(148,211,193,0.15); color: var(--teal); border: 1px solid rgba(148,211,193,0.2); }
+  .cond-b { background: rgba(165,200,255,0.1); color: var(--blue); border: 1px solid rgba(165,200,255,0.2); }
+  .cond-c { background: rgba(127,82,255,0.1); color: var(--purple-dim); border: 1px solid rgba(127,82,255,0.2); }
+  .card-ar-badge {
+    position: absolute; top: 10px; left: 10px;
+    padding: 3px 8px; border-radius: 4px; font-size: 10px; font-weight: 700;
+    background: rgba(0,77,64,0.8); color: var(--teal); border: 1px solid rgba(148,211,193,0.25);
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .card-body { padding: 16px; }
+  .card-brand { font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+  .card-name { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
+  .card-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 12px; }
+  .card-price { font-size: 20px; font-weight: 800; color: var(--text); }
+  .card-price-old { font-size: 13px; color: var(--text-dim); text-decoration: line-through; margin-left: 6px; }
+  .add-btn {
+    width: 34px; height: 34px; border-radius: 7px;
+    background: var(--teal-deep); border: 1px solid rgba(148,211,193,0.2);
+    color: var(--teal); font-size: 18px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s;
+  }
+  .add-btn:hover { background: rgba(0,77,64,0.9); transform: scale(1.05); }
+
+  /* AR FEATURE */
+  .ar-feature {
+    margin: 0 24px 56px; border-radius: 16px;
+    background: linear-gradient(135deg, rgba(0,77,64,0.4) 0%, rgba(0,49,95,0.3) 100%);
+    border: 1px solid rgba(148,211,193,0.15);
+    padding: 48px; display: flex; gap: 48px; align-items: center;
+  }
+  .ar-feature-text { flex: 1; }
+  .ar-feature-label { font-size: 11px; color: var(--teal); text-transform: uppercase; letter-spacing: 1px; font-weight: 600; margin-bottom: 12px; }
+  .ar-feature-title { font-size: 32px; font-weight: 800; letter-spacing: -1px; margin-bottom: 12px; line-height: 1.15; }
+  .ar-feature-title span { color: var(--teal); }
+  .ar-feature-desc { color: var(--text-muted); line-height: 1.7; font-size: 15px; }
+  .ar-visual {
+    width: 200px; height: 200px; border-radius: 16px; flex-shrink: 0;
+    background: rgba(0,77,64,0.3); border: 1px solid rgba(148,211,193,0.15);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 80px; position: relative; overflow: hidden;
+  }
+  .ar-visual::after {
+    content: 'AR';
+    position: absolute; bottom: 12px; right: 12px;
+    font-size: 12px; font-weight: 800; color: var(--teal);
+    background: rgba(0,77,64,0.8); padding: 3px 8px; border-radius: 4px;
+    border: 1px solid rgba(148,211,193,0.3);
+  }
+
+  /* ─── PRODUCT OVERVIEW ─── */
+  .page-header {
+    padding: 40px 24px 0; max-width: 1200px; margin: 0 auto;
+  }
+  .page-title { font-size: 28px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 4px; }
+  .page-sub { color: var(--text-muted); font-size: 15px; margin-bottom: 28px; }
+
+  .filters-bar {
+    display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 28px;
+  }
+  .filter-chip {
+    padding: 6px 14px; border-radius: 20px; font-size: 13px; cursor: pointer;
+    border: 1px solid var(--border2); color: var(--text-muted);
+    background: transparent; transition: all 0.15s;
+  }
+  .filter-chip:hover, .filter-chip.active {
+    border-color: rgba(148,211,193,0.3); color: var(--teal);
+    background: rgba(0,77,64,0.2);
+  }
+
+  /* ─── PRODUCT PAGE ─── */
+  .product-layout {
+    max-width: 1100px; margin: 0 auto; padding: 40px 24px;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 48px;
+  }
+  .product-img-area {
+    background: linear-gradient(135deg, #1C1B1B 0%, #09090B 100%);
+    border-radius: 16px; border: 1px solid var(--border);
+    min-height: 420px; display: flex; align-items: center; justify-content: center;
+    position: relative; font-size: 120px;
+  }
+  .ar-scan-btn {
+    position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 20px; border-radius: 8px;
+    background: rgba(0,77,64,0.9); border: 1px solid rgba(148,211,193,0.3);
+    color: var(--teal); font-size: 13px; font-weight: 600; cursor: pointer;
+    backdrop-filter: blur(8px); transition: all 0.15s; white-space: nowrap;
+  }
+  .ar-scan-btn:hover { background: rgba(0,77,64,1); }
+  .product-info { display: flex; flex-direction: column; gap: 20px; }
+  .product-brand { font-size: 12px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; }
+  .product-name { font-size: 32px; font-weight: 800; letter-spacing: -1px; line-height: 1.1; }
+  .product-price-row { display: flex; align-items: baseline; gap: 12px; }
+  .product-price { font-size: 36px; font-weight: 800; }
+  .product-price-old { font-size: 18px; color: var(--text-dim); text-decoration: line-through; }
+  .product-price-save { font-size: 13px; color: var(--success); background: rgba(148,211,193,0.1); padding: 2px 8px; border-radius: 4px; }
+  .condition-select { display: flex; gap: 8px; }
+  .cond-option {
+    padding: 8px 16px; border-radius: 8px; cursor: pointer;
+    border: 1px solid var(--border2); font-size: 13px; font-weight: 500;
+    transition: all 0.15s; color: var(--text-muted);
+  }
+  .cond-option.selected { border-color: var(--teal); color: var(--teal); background: rgba(0,77,64,0.2); }
+  .product-desc { color: var(--text-muted); line-height: 1.7; font-size: 14px; }
+  .spec-list { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .spec-item {
+    background: var(--bg2); border-radius: 8px; padding: 12px;
+    border: 1px solid var(--border);
+  }
+  .spec-key { font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+  .spec-val { font-size: 14px; font-weight: 600; }
+  .add-to-cart-btn {
+    width: 100%; padding: 16px; border-radius: 10px;
+    background: var(--teal); color: #00201A;
+    font-size: 16px; font-weight: 800; cursor: pointer; border: none;
+    transition: all 0.15s; letter-spacing: 0.2px;
+  }
+  .add-to-cart-btn:hover { background: #a8ddd0; transform: translateY(-1px); }
+
+  /* ─── CART ─── */
+  .cart-layout { max-width: 1000px; margin: 0 auto; padding: 40px 24px; display: grid; grid-template-columns: 1fr 340px; gap: 32px; }
+  .cart-items { display: flex; flex-direction: column; gap: 12px; }
+  .cart-item {
+    background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+    padding: 16px; display: flex; gap: 16px; align-items: center;
+  }
+  .cart-item-img {
+    width: 72px; height: 72px; border-radius: 8px; flex-shrink: 0;
+    background: linear-gradient(135deg, #1C1B1B 0%, #09090B 100%);
+    display: flex; align-items: center; justify-content: center; font-size: 36px;
+  }
+  .cart-item-info { flex: 1; }
+  .cart-item-name { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+  .cart-item-meta { font-size: 13px; color: var(--text-dim); }
+  .cart-item-right { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+  .cart-item-price { font-size: 18px; font-weight: 800; }
+  .remove-btn { font-size: 12px; color: var(--text-dim); cursor: pointer; padding: 2px; }
+  .remove-btn:hover { color: var(--danger); }
+  .qty-ctrl { display: flex; align-items: center; gap: 8px; }
+  .qty-btn { width: 28px; height: 28px; border-radius: 6px; background: var(--bg2); border: 1px solid var(--border2); color: var(--text); cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; }
+  .qty-btn:hover { background: rgba(255,255,255,0.08); }
+  .qty-num { font-size: 14px; font-weight: 600; min-width: 20px; text-align: center; }
+
+  .order-summary {
+    background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+    padding: 24px; height: fit-content; position: sticky; top: 80px;
+  }
+  .summary-title { font-size: 16px; font-weight: 700; margin-bottom: 20px; }
+  .summary-row { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 12px; color: var(--text-muted); }
+  .summary-row.total { font-size: 18px; font-weight: 800; color: var(--text); border-top: 1px solid var(--border); padding-top: 12px; margin-top: 4px; }
+  .checkout-btn {
+    width: 100%; padding: 14px; border-radius: 8px; margin-top: 16px;
+    background: var(--teal); color: #00201A;
+    font-size: 15px; font-weight: 800; cursor: pointer; border: none;
+    transition: all 0.15s;
+  }
+  .checkout-btn:hover { background: #a8ddd0; }
+  .promo-field { display: flex; gap: 8px; margin-top: 12px; }
+  .promo-input {
+    flex: 1; padding: 9px 12px; border-radius: 7px;
+    background: var(--bg); border: 1px solid var(--border2);
+    color: var(--text); font-size: 13px;
+  }
+  .promo-input:focus { outline: none; border-color: var(--teal); }
+  .promo-apply {
+    padding: 9px 14px; border-radius: 7px;
+    background: transparent; border: 1px solid var(--border2);
+    color: var(--text-muted); font-size: 13px; cursor: pointer;
+  }
+  .promo-apply:hover { color: var(--text); border-color: rgba(255,255,255,0.2); }
+
+  /* ─── CHECKOUT ─── */
+  .checkout-layout { max-width: 1000px; margin: 0 auto; padding: 40px 24px; display: grid; grid-template-columns: 1fr 340px; gap: 32px; }
+  .checkout-form { display: flex; flex-direction: column; gap: 24px; }
+  .form-section { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 24px; }
+  .form-section-title { font-size: 15px; font-weight: 700; margin-bottom: 18px; display: flex; align-items: center; gap: 8px; }
+  .form-section-num { width: 22px; height: 22px; border-radius: 50%; background: var(--teal-deep); border: 1px solid rgba(148,211,193,0.2); color: var(--teal); font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-group.full { grid-column: 1 / -1; }
+  .form-label { font-size: 12px; color: var(--text-muted); font-weight: 500; }
+  .form-input {
+    padding: 10px 12px; border-radius: 8px;
+    background: var(--bg); border: 1px solid var(--border2);
+    color: var(--text); font-size: 14px;
+    transition: border-color 0.15s;
+  }
+  .form-input:focus { outline: none; border-color: rgba(148,211,193,0.4); }
+  .form-input::placeholder { color: var(--text-dim); }
+  .pay-methods { display: flex; gap: 8px; margin-bottom: 16px; }
+  .pay-method {
+    flex: 1; padding: 10px; border-radius: 8px; cursor: pointer;
+    border: 1px solid var(--border2); text-align: center; font-size: 13px;
+    color: var(--text-muted); transition: all 0.15s;
+  }
+  .pay-method.selected { border-color: var(--teal); color: var(--teal); background: rgba(0,77,64,0.2); }
+  .place-order-btn {
+    width: 100%; padding: 15px; border-radius: 8px; margin-top: 8px;
+    background: var(--teal); color: #00201A;
+    font-size: 16px; font-weight: 800; cursor: pointer; border: none;
+    transition: all 0.15s;
+  }
+  .place-order-btn:hover { background: #a8ddd0; }
+
+  /* SUCCESS TOAST */
+  .toast {
+    position: fixed; bottom: 24px; right: 24px;
+    background: var(--teal-deep); border: 1px solid rgba(148,211,193,0.25);
+    color: var(--teal); padding: 12px 20px; border-radius: 10px;
+    font-size: 14px; font-weight: 500; z-index: 999;
+    transform: translateY(80px); opacity: 0;
+    transition: all 0.3s; pointer-events: none;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+
+  /* EMPTY CART */
+  .empty-state {
+    text-align: center; padding: 80px 24px;
+    color: var(--text-muted);
+  }
+  .empty-icon { font-size: 64px; margin-bottom: 16px; }
+  .empty-title { font-size: 20px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+  .empty-sub { font-size: 15px; }
+
+  /* ORDER SUCCESS */
+  .order-success {
+    text-align: center; padding: 100px 24px; max-width: 500px; margin: 0 auto;
+  }
+  .success-icon { font-size: 72px; margin-bottom: 24px; }
+  .success-title { font-size: 32px; font-weight: 800; letter-spacing: -1px; margin-bottom: 12px; }
+  .success-title span { color: var(--teal); }
+  .success-sub { color: var(--text-muted); font-size: 16px; line-height: 1.6; margin-bottom: 32px; }
+  .order-num { font-size: 13px; color: var(--text-dim); margin-bottom: 4px; }
+  .order-val { font-size: 18px; font-weight: 700; color: var(--teal); margin-bottom: 32px; font-family: monospace; letter-spacing: 2px; }
+
+  @media (max-width: 768px) {
+    .product-layout, .cart-layout, .checkout-layout { grid-template-columns: 1fr; }
+    .ar-feature { flex-direction: column; padding: 28px; }
+    .ar-visual { width: 100%; height: 160px; }
+    .stats-bar { gap: 24px; }
+  }
+
+  /* ─── AR MODAL ─── */
+  .ar-modal {
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 1000;
+    align-items: center; justify-content: center; backdrop-filter: blur(8px);
+  }
+  .ar-modal.active { display: flex; }
+  .ar-modal-content {
+    position: relative; width: 90%; max-width: 800px; height: 80vh; max-height: 600px;
+    background: var(--bg); border-radius: 16px; overflow: hidden; border: 1px solid var(--border);
+  }
+  model-viewer {
+    width: 100%; height: 100%;
+  }
+  .ar-modal-close {
+    position: absolute; top: 16px; right: 16px; z-index: 10;
+    width: 40px; height: 40px; border-radius: 50%;
+    background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.2);
+    color: white; font-size: 24px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s;
+  }
+  .ar-modal-close:hover { background: rgba(0,0,0,0.8); }
+  .ar-modal-info {
+    position: absolute; bottom: 16px; left: 16px; right: 16px; z-index: 10;
+    background: rgba(0,0,0,0.7); border: 1px solid rgba(148,211,193,0.2);
+    color: var(--teal); padding: 12px 16px; border-radius: 8px;
+    font-size: 13px; text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo" onclick="showPage('index')">Uc<span>AR</span>s</div>
+  <div class="nav-links">
+    <div class="nav-link active" id="nav-index" onclick="showPage('index')">Home</div>
+    <div class="nav-link" id="nav-overview" onclick="showPage('overview')">Consoles</div>
+    <div class="nav-link" id="nav-product" onclick="showPage('product')" style="display:none">Product</div>
+  </div>
+  <div class="nav-right">
+    <div class="cart-btn" onclick="showPage('cart')">
+      🛒 Winkelwagen
+      <div class="cart-count" id="cartCount">0</div>
+    </div>
+  </div>
+</nav>
+
+<!-- TOAST -->
+<div class="toast" id="toast">✓ Toegevoegd aan winkelwagen</div>
+
+<!-- ─── PAGE: INDEX ─── -->
+<div class="page active" id="page-index">
+  <div class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-badge">● AR-technologie inbegrepen</div>
+    <h1>Used Console <span class="ar">AR</span> Shop</h1>
+    <p class="hero-sub">Tweedehands gaming consoles inspecteren met Augmented Reality. Bekijk elke kras, elk onderdeel — vóór je koopt.</p>
+    <div class="hero-actions">
+      <button class="btn-primary" onclick="showPage('overview')">Bekijk alle consoles</button>
+      <button class="btn-outline" onclick="document.getElementById('ar-section').scrollIntoView({behavior:'smooth'})">Hoe werkt AR?</button>
+    </div>
+  </div>
+
+  <div class="stats-bar">
+    <div class="stat"><div class="stat-num">240+</div><div class="stat-label">Consoles</div></div>
+    <div class="stat"><div class="stat-num">AR</div><div class="stat-label">Inspectie</div></div>
+    <div class="stat"><div class="stat-num">48u</div><div class="stat-label">Verzending</div></div>
+    <div class="stat"><div class="stat-num">4.8★</div><div class="stat-label">Beoordeling</div></div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">
+      <div class="section-title">Uitgelichte consoles</div>
+      <div class="section-link" onclick="showPage('overview')">Alles bekijken →</div>
+    </div>
+    <div class="consoles-grid" id="featuredGrid"></div>
+  </div>
+
+  <div id="ar-section" style="padding:0 24px 56px; max-width:1200px; margin:0 auto;">
+    <div class="ar-feature">
+      <div class="ar-feature-text">
+        <div class="ar-feature-label">Google AR Core · WebXR</div>
+        <div class="ar-feature-title">Inspecteer met <span>AR</span> vóór je koopt</div>
+        <div class="ar-feature-desc">Scan de console met je telefoon en bekijk 3D het apparaat van alle kanten. Zie slijtage, kleuren en details precies zoals in het echt — geen verrassingen bij levering.</div>
+      </div>
+      <div class="ar-visual">🕹️</div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── PAGE: PRODUCT OVERVIEW ─── -->
+<div class="page" id="page-overview">
+  <div class="page-header">
+    <div class="page-title">Alle consoles</div>
+    <div class="page-sub">240 tweedehands consoles beschikbaar met AR-inspectie</div>
+    <div class="filters-bar">
+      <div class="filter-chip active">Alle merken</div>
+      <div class="filter-chip" onclick="filterConsoles('Sony')">Sony PlayStation</div>
+      <div class="filter-chip" onclick="filterConsoles('Microsoft')">Microsoft Xbox</div>
+      <div class="filter-chip" onclick="filterConsoles('Nintendo')">Nintendo</div>
+      <div class="filter-chip" onclick="filterCondition('A')">Conditie A</div>
+      <div class="filter-chip" onclick="filterCondition('B')">Conditie B</div>
+    </div>
+  </div>
+  <div class="section" style="padding-top:0">
+    <div class="consoles-grid" id="overviewGrid"></div>
+  </div>
+</div>
+
+<!-- ─── PAGE: PRODUCT DETAIL ─── -->
+<div class="page" id="page-product">
+  <div class="product-layout">
+    <div>
+      <div class="product-img-area" id="productImg">
+        <img src="playstation-3-slim-1679925309.webp" alt="Product" style="max-width:85%;max-height:85%;object-fit:contain;">
+        <div class="ar-scan-btn" onclick="showArModal()">
+          📷 AR-inspectie starten
+        </div>
+      </div>
+      <div style="margin-top:12px; display:grid; grid-template-columns: repeat(3,1fr); gap:8px;">
+        <div style="background:var(--bg2);border:1px solid rgba(148,211,193,0.3);border-radius:8px;height:64px;display:flex;align-items:center;justify-content:center;cursor:pointer;"><img src="" alt="View 1" style="max-width:90%;max-height:90%;object-fit:contain;"></div>
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;height:64px;display:flex;align-items:center;justify-content:center;cursor:pointer;opacity:0.6;"><img src="" alt="View 2" style="max-width:90%;max-height:90%;object-fit:contain;"></div>
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;height:64px;display:flex;align-items:center;justify-content:center;cursor:pointer;opacity:0.6;"><img src="" alt="View 3" style="max-width:90%;max-height:90%;object-fit:contain;"></div>
+      </div>
+    </div>
+    <div class="product-info">
+      <div>
+        <div class="product-brand" id="productBrand">Sony</div>
+        <div class="product-name" id="productName">PlayStation 3 Slim</div>
+      </div>
+      <div class="product-price-row">
+        <div class="product-price" id="productPrice">€89,00</div>
+        <div class="product-price-old" id="productPriceOld">€120,00</div>
+        <div class="product-price-save">−26%</div>
+      </div>
+      <div>
+        <div style="font-size:12px;color:var(--text-dim);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px;">Conditie kiezen</div>
+        <div class="condition-select">
+          <div class="cond-option selected" onclick="selectCondition(this,'A',89)">A — Uitstekend</div>
+          <div class="cond-option" onclick="selectCondition(this,'B',69)">B — Goed</div>
+          <div class="cond-option" onclick="selectCondition(this,'C',49)">C — Normaal</div>
+        </div>
+      </div>
+      <div class="product-desc" id="productDesc">
+        De PlayStation 3 Slim is een stijlvolle, compacte versie van Sony's legendarische console. Ideaal voor retro gaming en BluRay-afspelen. Deze unit is grondig getest en functioneert perfect.
+      </div>
+      <div class="spec-list" id="productSpecs">
+        <div class="spec-item"><div class="spec-key">Opslag</div><div class="spec-val">160GB HDD</div></div>
+        <div class="spec-item"><div class="spec-key">Controllers</div><div class="spec-val">1× DualShock 3</div></div>
+        <div class="spec-item"><div class="spec-key">Kleur</div><div class="spec-val">Charcoal Black</div></div>
+        <div class="spec-item"><div class="spec-key">Regio</div><div class="spec-val">EUR / PAL</div></div>
+      </div>
+      <button class="add-to-cart-btn" onclick="addCurrentToCart()">+ Toevoegen aan winkelwagen</button>
+      <div style="font-size:13px;color:var(--text-dim);text-align:center;margin-top:-8px;">
+        ✓ 14 dagen retourrecht &nbsp;·&nbsp; ✓ 1 jaar garantie
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── PAGE: CART ─── -->
+<div class="page" id="page-cart">
+  <div id="cartContent"></div>
+</div>
+
+<!-- ─── PAGE: CHECKOUT ─── -->
+<div class="page" id="page-checkout">
+  <div class="page-header" style="max-width:1000px">
+    <div class="page-title">Afrekenen</div>
+    <div class="page-sub">Stap 1 van 1 — vul je gegevens in</div>
+  </div>
+  <div class="checkout-layout">
+    <div class="checkout-form">
+      <div class="form-section">
+        <div class="form-section-title"><div class="form-section-num">1</div> Contactgegevens</div>
+        <div class="form-row">
+          <div class="form-group"><div class="form-label">Voornaam</div><input class="form-input" placeholder="Jan" /></div>
+          <div class="form-group"><div class="form-label">Achternaam</div><input class="form-input" placeholder="de Vries" /></div>
+          <div class="form-group full"><div class="form-label">E-mailadres</div><input class="form-input" type="email" placeholder="jan@example.nl" /></div>
+          <div class="form-group full"><div class="form-label">Telefoonnummer</div><input class="form-input" placeholder="+31 6 12345678" /></div>
+        </div>
+      </div>
+      <div class="form-section">
+        <div class="form-section-title"><div class="form-section-num">2</div> Bezorgadres</div>
+        <div class="form-row">
+          <div class="form-group full"><div class="form-label">Straat en huisnummer</div><input class="form-input" placeholder="Kerkstraat 12B" /></div>
+          <div class="form-group"><div class="form-label">Postcode</div><input class="form-input" placeholder="1234 AB" /></div>
+          <div class="form-group"><div class="form-label">Stad</div><input class="form-input" placeholder="Amsterdam" /></div>
+        </div>
+      </div>
+      <div class="form-section">
+        <div class="form-section-title"><div class="form-section-num">3</div> Betaalwijze</div>
+        <div class="pay-methods">
+          <div class="pay-method selected" onclick="selectPay(this)">🏦 iDEAL</div>
+          <div class="pay-method" onclick="selectPay(this)">💳 Creditcard</div>
+          <div class="pay-method" onclick="selectPay(this)">🅿️ PayPal</div>
+        </div>
+        <div class="form-row">
+          <div class="form-group full"><div class="form-label">Naam op rekening</div><input class="form-input" placeholder="J.A. de Vries" /></div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="order-summary">
+        <div class="summary-title">Jouw bestelling</div>
+        <div id="checkoutItems"></div>
+        <div class="summary-row"><span>Subtotaal</span><span id="checkoutSubtotal">€0,00</span></div>
+        <div class="summary-row"><span>Verzending</span><span style="color:var(--success)">Gratis</span></div>
+        <div class="summary-row total"><span>Totaal</span><span id="checkoutTotal">€0,00</span></div>
+        <button class="place-order-btn" onclick="placeOrder()">Bestelling plaatsen →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── PAGE: ORDER SUCCESS ─── -->
+<div class="page" id="page-success">
+  <div class="order-success">
+    <div class="success-icon">🎉</div>
+    <div class="success-title">Bestelling <span>geplaatst!</span></div>
+    <div class="success-sub">Bedankt voor je aankoop bij UcARs. Je ontvangt een bevestiging per e-mail. Je console wordt binnen 48 uur verzonden.</div>
+    <div class="order-num">Bestelnummer</div>
+    <div class="order-val" id="orderNum">UCAR-000000</div>
+    <button class="btn-primary" onclick="showPage('index')">Terug naar home</button>
+  </div>
+</div>
+
+<!-- ─── AR VIEWER MODAL ─── -->
+<div class="ar-modal" id="arModal">
+  <div class="ar-modal-content">
+    <div class="ar-modal-close" onclick="closeArModal()">×</div>
+    <model-viewer 
+      id="modelViewer"
+      ar 
+      ar-modes="webxr scene-viewer quick-look"
+      loading="eager"
+      camera-controls
+      touch-action="pan-y"
+      auto-rotate>
+    </model-viewer>
+    <div class="ar-modal-info">
+      📱 Tik 'Start AR' op je telefoon om de console in je ruimte te plaatsen
+    </div>
+  </div>
+</div>
+
+<script>
+// ──────────── DATA ────────────
+const consoles = [
+  { id:1, brand:'Sony', name:'PlayStation 3 Slim', image:'playstation-3-slim-1679925309.webp', model:'playstation_3.glb', price:89, oldPrice:120, condition:'A', color:'#1C1B1B' },
+  { id:2, brand:'Sony', name:'PlayStation 2', image:'playstation-2-slim-1646056360.webp', model:'playstation_2.glb', price:59, oldPrice:80, condition:'B', color:'#1C1B1B' },
+  { id:3, brand:'Microsoft', name:'Xbox 360 S', image:'xbox-360-slim-1696321698.webp', model:'xbox_360_black__3d_model_by_rob_bryant_jr.glb', price:75, oldPrice:100, condition:'A', color:'#1C1B1B' },
+  { id:5, brand:'Sony', name:'PlayStation Portable', image:'playstation-psp-slim-lite-1689869627.webp', model:'psp_street.glb', price:49, oldPrice:70, condition:'B', color:'#1C1B1B' },
+  { id:6, brand:'Nintendo', name:'Wii', image:'nintendo-wii-bundle-1678276456.webp', model:'wii.glb', price:65, oldPrice:90, condition:'C', color:'#1C1B1B' },
+  { id:8, brand:'Sony', name:'PlayStation 1', image:'PlayStation_1_Classic_-_Grijs_-_Console__PS1_.jpg', model:'playstation_1_-_assignment_-_gap.glb', price:35, oldPrice:50, condition:'A', color:'#1C1B1B' },
+];
+
+let cart = [];
+let currentProduct = consoles[0];
+let currentCondition = 'A';
+
+// ──────────── CART ────────────
+function getCartTotal() { return cart.reduce((s, i) => s + i.price * i.qty, 0); }
+function getCartCount() { return cart.reduce((s, i) => s + i.qty, 0); }
+
+function addToCart(console) {
+  const existing = cart.find(i => i.id === console.id && i.condition === (console.condition || 'A'));
+  if (existing) existing.qty++;
+  else cart.push({ ...console, qty: 1, condition: console.condition || 'A' });
+  updateCartUI();
+  showToast(`✓ ${console.name} toegevoegd`);
+}
+
+function removeFromCart(id) {
+  cart = cart.filter(i => i.id !== id);
+  updateCartUI();
+  renderCart();
+}
+
+function changeQty(id, delta) {
+  const item = cart.find(i => i.id === id);
+  if (!item) return;
+  item.qty += delta;
+  if (item.qty <= 0) removeFromCart(id);
+  else { updateCartUI(); renderCart(); }
+}
+
+function updateCartUI() {
+  document.getElementById('cartCount').textContent = getCartCount();
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// ──────────── RENDER CARDS ────────────
+function condClass(c) { return c==='A'?'cond-a':c==='B'?'cond-b':'cond-c'; }
+
+function renderCard(c, onclick) {
+  return `<div class="console-card" onclick="${onclick}">
+    <div class="card-img">
+      <img src="${c.image}" alt="${c.name}" style="max-width:90%;max-height:90%;object-fit:contain;">
+      <div class="card-condition ${condClass(c.condition)}">${c.condition}</div>
+      <div class="card-ar-badge">AR</div>
+    </div>
+    <div class="card-body">
+      <div class="card-brand">${c.brand}</div>
+      <div class="card-name">${c.name}</div>
+      <div class="card-footer">
+        <div>
+          <span class="card-price">€${c.price},00</span>
+          <span class="card-price-old">€${c.oldPrice},-</span>
+        </div>
+        <button class="add-btn" onclick="event.stopPropagation();addToCart(consoles[${consoles.indexOf(c)}])">+</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderFeatured() {
+  document.getElementById('featuredGrid').innerHTML = consoles.slice(0,4).map(c => renderCard(c, `openProduct(${consoles.indexOf(c)})`)).join('');
+}
+
+function renderOverview() {
+  document.getElementById('overviewGrid').innerHTML = consoles.map(c => renderCard(c, `openProduct(${consoles.indexOf(c)})`)).join('');
+}
+
+function filterConsoles(brand) {
+  const filtered = consoles.filter(c => c.brand === brand);
+  document.getElementById('overviewGrid').innerHTML = filtered.map(c => renderCard(c, `openProduct(${consoles.indexOf(c)})`)).join('');
+  document.querySelectorAll('.filter-chip').forEach(el => el.classList.remove('active'));
+  event.target.classList.add('active');
+}
+
+function filterCondition(cond) {
+  const filtered = consoles.filter(c => c.condition === cond);
+  document.getElementById('overviewGrid').innerHTML = filtered.map(c => renderCard(c, `openProduct(${consoles.indexOf(c)})`)).join('');
+}
+
+// ──────────── PRODUCT ────────────
+function openProduct(idx) {
+  currentProduct = consoles[idx];
+  currentCondition = 'A';
+  const productImgEl = document.getElementById('productImg');
+  productImgEl.innerHTML = `<img src="${currentProduct.image}" alt="${currentProduct.name}" style="max-width:85%;max-height:85%;object-fit:contain;"><div class="ar-scan-btn" onclick="showArModal()">
+          📷 AR-inspectie starten
+        </div>`;
+  document.getElementById('productBrand').textContent = currentProduct.brand;
+  document.getElementById('productName').textContent = currentProduct.name;
+  document.getElementById('productPrice').textContent = `€${currentProduct.price},00`;
+  document.getElementById('productPriceOld').textContent = `€${currentProduct.oldPrice},-`;
+  document.querySelectorAll('.cond-option').forEach(el => el.classList.remove('selected'));
+  document.querySelectorAll('.cond-option')[0].classList.add('selected');
+  document.getElementById('nav-product').style.display = 'block';
+  showPage('product');
+}
+
+function selectCondition(el, cond, price) {
+  document.querySelectorAll('.cond-option').forEach(e => e.classList.remove('selected'));
+  el.classList.add('selected');
+  currentCondition = cond;
+  document.getElementById('productPrice').textContent = `€${price},00`;
+}
+
+function addCurrentToCart() {
+  const prices = { A: currentProduct.price, B: currentProduct.price - 20, C: currentProduct.price - 40 };
+  addToCart({ ...currentProduct, price: prices[currentCondition], condition: currentCondition });
+}
+
+// ──────────── CART RENDER ────────────
+function renderCart() {
+  const el = document.getElementById('cartContent');
+  if (cart.length === 0) {
+    el.innerHTML = `<div class="empty-state">
+      <div class="empty-icon">🛒</div>
+      <div class="empty-title">Winkelwagen is leeg</div>
+      <div class="empty-sub">Voeg een console toe om te beginnen</div>
+      <br><button class="btn-primary" style="margin-top:16px" onclick="showPage('overview')">Bekijk consoles</button>
+    </div>`;
+    return;
+  }
+  const total = getCartTotal();
+  el.innerHTML = `<div class="cart-layout">
+    <div>
+      <div style="font-size:18px;font-weight:700;margin-bottom:16px;">${getCartCount()} item${getCartCount()>1?'s':''}</div>
+      <div class="cart-items">
+        ${cart.map(item => `
+          <div class="cart-item">
+            <div class="cart-item-img"><img src="${item.image}" alt="${item.name}" style="max-width:90%;max-height:90%;object-fit:contain;"></div>
+            <div class="cart-item-info">
+              <div class="cart-item-name">${item.name}</div>
+              <div class="cart-item-meta">Conditie ${item.condition} · ${item.brand}</div>
+            </div>
+            <div class="cart-item-right">
+              <div class="cart-item-price">€${item.price * item.qty},00</div>
+              <div class="qty-ctrl">
+                <button class="qty-btn" onclick="changeQty(${item.id},-1)">−</button>
+                <span class="qty-num">${item.qty}</span>
+                <button class="qty-btn" onclick="changeQty(${item.id},1)">+</button>
+              </div>
+              <div class="remove-btn" onclick="removeFromCart(${item.id})">✕ Verwijderen</div>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+    <div>
+      <div class="order-summary">
+        <div class="summary-title">Overzicht</div>
+        ${cart.map(i => `<div class="summary-row"><span>${i.name}</span><span>€${i.price * i.qty},00</span></div>`).join('')}
+        <div class="summary-row"><span>Verzending</span><span style="color:var(--success)">Gratis</span></div>
+        <div class="summary-row total"><span>Totaal</span><span>€${total},00</span></div>
+        <button class="checkout-btn" onclick="goToCheckout()">Naar afrekenen →</button>
+        <div class="promo-field">
+          <input class="promo-input" placeholder="Promotiecode" />
+          <button class="promo-apply">Toepassen</button>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ──────────── CHECKOUT ────────────
+function goToCheckout() {
+  const total = getCartTotal();
+  document.getElementById('checkoutItems').innerHTML = cart.map(i =>
+    `<div class="summary-row"><span>${i.name} ×${i.qty}</span><span>€${i.price*i.qty},00</span></div>`
+  ).join('');
+  document.getElementById('checkoutSubtotal').textContent = `€${total},00`;
+  document.getElementById('checkoutTotal').textContent = `€${total},00`;
+  showPage('checkout');
+}
+
+function selectPay(el) {
+  document.querySelectorAll('.pay-method').forEach(e => e.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+function placeOrder() {
+  const num = 'UCAR-' + Math.floor(100000 + Math.random() * 900000);
+  document.getElementById('orderNum').textContent = num;
+  cart = [];
+  updateCartUI();
+  showPage('success');
+}
+
+function showArModal() {
+  const modelViewer = document.getElementById('modelViewer');
+  modelViewer.src = currentProduct.model;
+  document.getElementById('arModal').classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeArModal() {
+  document.getElementById('arModal').classList.remove('active');
+  document.body.style.overflow = 'auto';
+}
+
+// ──────────── NAVIGATION ────────────
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  const navEl = document.getElementById('nav-' + name);
+  if (navEl) navEl.classList.add('active');
+  if (name === 'cart') renderCart();
+  window.scrollTo(0, 0);
+}
+
+// ──────────── INIT ────────────
+renderFeatured();
+renderOverview();
+</script>
+</body>
+</html>
