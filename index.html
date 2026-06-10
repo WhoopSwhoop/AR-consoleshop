@@ -624,10 +624,13 @@
       loading="eager"
       camera-controls
       touch-action="pan-y"
-      auto-rotate>
+      auto-rotate
+      reveal="interaction"
+      shadow-intensity="1"
+      exposure="1">
     </model-viewer>
     <div class="ar-modal-info">
-      📱 Tik 'Start AR' op je telefoon om de console in je ruimte te plaatsen
+      📱 Swipe to rotate · Pinch to zoom · Tap 'AR' button to place in your space
     </div>
   </div>
 </div>
@@ -838,6 +841,20 @@ function placeOrder() {
 function showArModal() {
   const modelViewer = document.getElementById('modelViewer');
   modelViewer.src = currentProduct.model;
+  
+  // Ensure model is loaded
+  modelViewer.addEventListener('model-visibility', (e) => {
+    console.log('Model loaded:', currentProduct.model);
+  }, { once: true });
+  
+  // Handle AR errors
+  modelViewer.addEventListener('ar-status', (e) => {
+    console.log('AR Status:', e.detail.status);
+    if (e.detail.status === 'not-supported') {
+      showToast('⚠️ AR niet ondersteund op dit apparaat');
+    }
+  });
+  
   document.getElementById('arModal').classList.add('active');
   document.body.style.overflow = 'hidden';
 }
